@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { ClipboardIcon } from "@heroicons/react/24/outline";
 
 const symbols = '~`!@#$%^&*()_-+={[}]|:;"<,>.?/';
 
 const PasswordGenerator: React.FC = () => {
-  // State hooks
   const [password, setPassword] = useState<string>("");
   const [passwordLength, setPasswordLength] = useState<number>(10);
   const [uppercase, setUppercase] = useState<boolean>(true);
@@ -12,12 +12,10 @@ const PasswordGenerator: React.FC = () => {
   const [symbolsIncluded, setSymbolsIncluded] = useState<boolean>(false);
   const [strength, setStrength] = useState<string>("gray");
 
-  // Password length slider handler
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswordLength(Number(e.target.value));
   };
 
-  // Checkbox change handler
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     switch (name) {
@@ -33,31 +31,24 @@ const PasswordGenerator: React.FC = () => {
       case "symbols":
         setSymbolsIncluded(checked);
         break;
-      default:
-        break;
     }
   };
 
-  // Generate random password part functions
   const getRandomInteger = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min)) + min;
 
   const generateNumber = () => getRandomInteger(1, 10).toString();
-
   const generateLowercase = () =>
     String.fromCharCode(getRandomInteger(97, 123));
-
   const generateUppercase = () => String.fromCharCode(getRandomInteger(65, 91));
-
   const generateSymbol = () =>
     symbols.charAt(getRandomInteger(0, symbols.length));
 
-  // Function to calculate password strength
   const calcStrength = () => {
-    let hasUpper = uppercase;
-    let hasLower = lowercase;
-    let hasNumber = numbers;
-    let hasSymbol = symbolsIncluded;
+    const hasUpper = uppercase;
+    const hasLower = lowercase;
+    const hasNumber = numbers;
+    const hasSymbol = symbolsIncluded;
 
     if (
       hasUpper &&
@@ -77,7 +68,6 @@ const PasswordGenerator: React.FC = () => {
     }
   };
 
-  // Shuffle the password
   const shuffleArray = (array: string[]) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = getRandomInteger(0, i + 1);
@@ -86,10 +76,9 @@ const PasswordGenerator: React.FC = () => {
     return array.join("");
   };
 
-  // Function to generate the password
   const generatePassword = () => {
     if (![uppercase, lowercase, numbers, symbolsIncluded].includes(true)) {
-      alert("At least one checkbox must be selected.");
+      alert("Please select at least one option.");
       return;
     }
 
@@ -101,34 +90,29 @@ const PasswordGenerator: React.FC = () => {
     if (numbers) selectedFuncs.push(generateNumber);
     if (symbolsIncluded) selectedFuncs.push(generateSymbol);
 
-    // Add required characters
     selectedFuncs.forEach((func) => (passwordStr += func()));
 
-    // Fill the remaining length with random selections
     for (let i = passwordStr.length; i < passwordLength; i++) {
       const randomFunc =
         selectedFuncs[getRandomInteger(0, selectedFuncs.length)];
       passwordStr += randomFunc();
     }
 
-    // Shuffle the password
     passwordStr = shuffleArray(Array.from(passwordStr));
     setPassword(passwordStr);
     calcStrength();
   };
 
-  // Copy password to clipboard
   const copyContent = async () => {
     try {
-      if (!password) throw new Error("First generate a password to copy");
+      if (!password) throw new Error("Nothing to copy");
       await navigator.clipboard.writeText(password);
-      alert("Password copied!");
-    } catch (error) {
-      alert("Failed to copy password");
+      alert("Password copied to clipboard!");
+    } catch {
+      alert("Failed to copy password.");
     }
   };
 
-  // useEffect to recalculate password strength on change
   useEffect(() => {
     calcStrength();
   }, [
@@ -141,91 +125,94 @@ const PasswordGenerator: React.FC = () => {
   ]);
 
   return (
-    <div className="wrapper">
-      <div className="container">
-        <h1 className="app-name">Password Generator</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-gray-800 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 space-y-6">
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          🔐 Password Generator
+        </h1>
 
-        <div className="display-container">
-          <input type="text" readOnly value={password} className="display" />
-          <button className="copy-btn" onClick={copyContent}>
-            <img src="./images/copy.svg" alt="copy" className="copy-img" />
+        <div className="relative">
+          <input
+            type="text"
+            readOnly
+            value={password}
+            className="w-full bg-gray-100 rounded-md p-3 pr-10 text-gray-700 font-mono"
+            placeholder="Your password will appear here"
+          />
+          <button
+            onClick={copyContent}
+            className="absolute right-3 top-3 text-gray-600 hover:text-gray-900"
+          >
+            <ClipboardIcon className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="input-container">
-          <div className="length-container">
-            <p>Password Length</p>
-            <p>{passwordLength}</p>
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm font-medium text-gray-700">
+            <label>Password Length</label>
+            <span>{passwordLength}</span>
           </div>
-
           <input
             type="range"
-            min="1"
+            min="4"
             max="20"
             step="1"
             value={passwordLength}
             onChange={handleSliderChange}
-            className="slider"
+            className="w-full accent-indigo-600"
           />
 
-          <div className="checkbox-wrapper">
-            <div className="checkbox-container">
-              <input
-                type="checkbox"
-                id="uppercaseCb"
-                name="uppercase"
-                checked={uppercase}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="uppercaseCb">Includes Uppercase letters</label>
-            </div>
-
-            <div className="checkbox-container">
-              <input
-                type="checkbox"
-                id="lowercaseCb"
-                name="lowercase"
-                checked={lowercase}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="lowercaseCb">Includes Lowercase letters</label>
-            </div>
-
-            <div className="checkbox-container">
-              <input
-                type="checkbox"
-                id="numberCb"
-                name="numbers"
-                checked={numbers}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="numberCb">Includes Numbers</label>
-            </div>
-
-            <div className="checkbox-container">
-              <input
-                type="checkbox"
-                id="symbolCb"
-                name="symbols"
-                checked={symbolsIncluded}
-                onChange={handleCheckboxChange}
-              />
-              <label htmlFor="symbolCb">Includes Symbols</label>
-            </div>
+          <div className="grid gap-2">
+            {[
+              {
+                id: "uppercase",
+                label: "Include Uppercase Letters",
+                checked: uppercase,
+              },
+              {
+                id: "lowercase",
+                label: "Include Lowercase Letters",
+                checked: lowercase,
+              },
+              { id: "numbers", label: "Include Numbers", checked: numbers },
+              {
+                id: "symbols",
+                label: "Include Symbols",
+                checked: symbolsIncluded,
+              },
+            ].map(({ id, label, checked }) => (
+              <label key={id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  name={id}
+                  checked={checked}
+                  onChange={handleCheckboxChange}
+                  className="accent-indigo-600"
+                />
+                <span className="text-gray-700">{label}</span>
+              </label>
+            ))}
           </div>
 
-          <div className="strength-container">
-            <p>Strength</p>
+          <div className="flex items-center justify-between mt-4">
+            <span className="text-sm font-semibold text-gray-700">
+              Strength
+            </span>
             <div
-              className="indicator"
-              style={{
-                backgroundColor: strength,
-                boxShadow: `0px 0px 12px 1px ${strength}`,
-              }}
+              className={`h-4 w-16 rounded-full transition-all duration-300 ${
+                strength === "green"
+                  ? "bg-green-500 shadow-md shadow-green-300"
+                  : strength === "yellow"
+                  ? "bg-yellow-400 shadow-md shadow-yellow-200"
+                  : "bg-red-500 shadow-md shadow-red-300"
+              }`}
             ></div>
           </div>
 
-          <button id="generateButton" onClick={generatePassword}>
+          <button
+            onClick={generatePassword}
+            className="w-full mt-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-semibold transition-all duration-200"
+          >
             Generate Password
           </button>
         </div>
